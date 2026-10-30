@@ -122,7 +122,7 @@ XSS: não há `dangerouslySetInnerHTML` ou `innerHTML` no código atual. `[LIDO 
 
 ## 10. Testes
 
-Não há testes unitários, integração ou E2E e a cobertura é 0%. `[VERIFICADO]` Última execução registrada: `npm run check` e `npm run build` passaram em 30/10/2026 após ajuste de tipos Vite. Testes visuais/responsivos ainda devem ser anexados ao fim desta fase.
+Não há testes unitários, integração ou E2E e a cobertura automatizada é 0%. `[VERIFICADO]` Em 30/10/2026, `npm run check`, `npm run build` e `npm audit --json` passaram; o audit retornou 0 vulnerabilidades. `[VERIFICADO]` No navegador gerenciado, foram executados login demo, carregamento do painel e navegação até Designs em desktop. `[VERIFICADO]` O deploy privado abriu a barreira externa “Entre para acessar”, mas o aplicativo atrás dela não foi retestado em produção. `[VERIFICADO]` CSS mobile-first, bottom nav e alvos de 44 px foram inspecionados em `src/styles/index.css:57-65,95-102`; 390 px e 768 px ainda não foram verificados em viewports reais. `[LIDO NO CÓDIGO]`
 
 ## 11. Dados e contas de teste
 
