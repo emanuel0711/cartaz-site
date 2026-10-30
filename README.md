@@ -1,29 +1,30 @@
 # Cartaz Economix
 
-Substituto moderno do Cartaz TLT para criar modelos, preencher produtos em lote e gerar cartazes para impressão.
+Modern replacement for Cartaz TLT: create reusable designs, validate product batches, preview posters, and export vector PDFs for printing.
 
-## Fase atual
+## Current release
 
-Fase A concluída: decisões de arquitetura, design system, navegação responsiva e base de autenticação. Designs, editor, produtos e geração serão entregues nas fases seguintes.
+The functional English MVP includes responsive navigation, a Designs library, visual editor, CSV/XLSX import, inline product correction, poster preview, vector PDF generation, and local file history.
 
-## Rodar localmente
+## Run locally
 
 ```bash
 npm install
 npm run dev
 ```
 
-Verificações:
+Checks:
 
 ```bash
 npm run check
+npm test
 npm run build
 npm audit
 ```
 
-Variáveis opcionais para autenticação real:
+Optional variables for Supabase Auth:
 
 - `VITE_SUPABASE_URL`
 - `VITE_SUPABASE_ANON_KEY`
 
-Sem essas variáveis, a aplicação usa um modo de demonstração local. Ele não deve ser usado com dados reais nem em produção. Consulte [docs/AUDIT_HANDOFF.md](docs/AUDIT_HANDOFF.md) antes de revisar ou publicar o sistema.
+Without these variables, the application runs in private preview mode and persists data in the current browser. Do not use real business data until the Supabase database, RLS, private Storage, and worker services are implemented. Read [docs/AUDIT_HANDOFF.md](docs/AUDIT_HANDOFF.md) before reviewing or publishing the system.

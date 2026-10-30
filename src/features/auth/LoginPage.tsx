@@ -4,8 +4,8 @@ import { useAuth } from "./AuthProvider";
 
 export function LoginPage() {
   const { signIn, recover, isDemo } = useAuth();
-  const [email, setEmail] = useState(isDemo ? "equipe@economix.com.br" : "");
-  const [password, setPassword] = useState(isDemo ? "demonstracao" : "");
+  const [email, setEmail] = useState(isDemo ? "team@economix.example" : "");
+  const [password, setPassword] = useState(isDemo ? "private-preview" : "");
   const [showPassword, setShowPassword] = useState(false);
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
@@ -25,44 +25,44 @@ export function LoginPage() {
 
   return (
     <main className="login-page">
-      <section className="login-story" aria-label="Apresentação do produto">
+      <section className="login-story" aria-label="Product introduction">
         <div className="brand-lockup">
           <span className="brand-mark" aria-hidden="true"><LayoutTemplate size={22} /></span>
           <span>Cartaz Economix</span>
         </div>
         <div className="login-copy">
-          <span className="eyebrow"><Sparkles size={15} /> Ofertas prontas em minutos</span>
-          <h1>Do produto à impressão, sem retrabalho.</h1>
-          <p>Crie um modelo uma vez, revise seus produtos e gere todos os cartazes com o mesmo padrão.</p>
+          <span className="eyebrow"><Sparkles size={15} /> Offers ready in minutes</span>
+          <h1>From product list to print, without rework.</h1>
+          <p>Create a design once, review your products, and generate every poster with the same consistent standard.</p>
           <ul className="benefit-list">
-            <li><Check size={18} /> Campos dinâmicos fáceis de entender</li>
-            <li><Check size={18} /> Revisão antes de gerar o PDF</li>
-            <li><Check size={18} /> Histórico para baixar e reimprimir</li>
+            <li><Check size={18} /> Dynamic fields anyone can understand</li>
+            <li><Check size={18} /> Review before generating the PDF</li>
+            <li><Check size={18} /> History for quick download and reprint</li>
           </ul>
         </div>
-        <p className="privacy-note"><ShieldCheck size={16} /> Acesso organizado por conta e equipe.</p>
+        <p className="privacy-note"><ShieldCheck size={16} /> One workspace for your designs, products, and files.</p>
       </section>
 
       <section className="login-panel" aria-labelledby="login-title">
         <form className="auth-card" onSubmit={handleSubmit}>
           <div>
-            <span className="eyebrow">Bem-vindo de volta</span>
-            <h2 id="login-title">Entrar</h2>
-            <p>Continue de onde sua equipe parou.</p>
+            <span className="eyebrow">Welcome back</span>
+            <h2 id="login-title">Sign in</h2>
+            <p>Continue where your team left off.</p>
           </div>
 
-          {isDemo && <div className="demo-note">Prévia da fase A: use os dados preenchidos para entrar.</div>}
+          {isDemo && <div className="demo-note">Private preview mode: use the filled-in details. Do not enter real credentials or business data.</div>}
 
           <label>
-            <span>E-mail</span>
+            <span>Email</span>
             <input type="email" autoComplete="email" value={email} onChange={(event) => setEmail(event.target.value)} required />
           </label>
 
           <label>
-            <span>Senha</span>
+            <span>Password</span>
             <span className="password-field">
               <input type={showPassword ? "text" : "password"} autoComplete="current-password" value={password} onChange={(event) => setPassword(event.target.value)} required />
-              <button type="button" className="icon-button" onClick={() => setShowPassword((value) => !value)} aria-label={showPassword ? "Ocultar senha" : "Mostrar senha"} title={showPassword ? "Ocultar senha" : "Mostrar senha"}>
+              <button type="button" className="icon-button" onClick={() => setShowPassword((value) => !value)} aria-label={showPassword ? "Hide password" : "Show password"} title={showPassword ? "Hide password" : "Show password"}>
                 {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
               </button>
             </span>
@@ -71,9 +71,9 @@ export function LoginPage() {
           {message && <p className="form-message" role="status">{message}</p>}
 
           <button className="primary-button" type="submit" disabled={busy}>
-            {busy ? "Entrando…" : "Entrar"}<ArrowRight size={18} />
+            {busy ? "Signing in…" : "Sign in"}<ArrowRight size={18} />
           </button>
-          <button className="text-button" type="button" onClick={handleRecovery}>Esqueci minha senha</button>
+          <button className="text-button" type="button" onClick={handleRecovery}>Forgot my password</button>
         </form>
       </section>
     </main>

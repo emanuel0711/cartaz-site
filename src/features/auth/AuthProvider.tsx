@@ -22,7 +22,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     if (!supabase) {
       if (localStorage.getItem(DEMO_KEY)) {
-        setUser({ id: "demo", email: "equipe@economix.com.br", name: "Equipe Economix" });
+        setUser({ id: "preview", email: "team@economix.example", name: "Economix Team" });
       }
       setLoading(false);
       return;
@@ -30,13 +30,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     void supabase.auth.getSession().then(({ data }) => {
       const current = data.session?.user;
-      setUser(current ? { id: current.id, email: current.email ?? "", name: current.user_metadata.name ?? "Equipe Economix" } : null);
+      setUser(current ? { id: current.id, email: current.email ?? "", name: current.user_metadata.name ?? "Economix Team" } : null);
       setLoading(false);
     });
 
     const { data } = supabase.auth.onAuthStateChange((_event, session) => {
       const current = session?.user;
-      setUser(current ? { id: current.id, email: current.email ?? "", name: current.user_metadata.name ?? "Equipe Economix" } : null);
+      setUser(current ? { id: current.id, email: current.email ?? "", name: current.user_metadata.name ?? "Economix Team" } : null);
     });
     return () => data.subscription.unsubscribe();
   }, []);
@@ -48,7 +48,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     signIn: async (email, password) => {
       if (!supabase) {
         localStorage.setItem(DEMO_KEY, "1");
-        setUser({ id: "demo", email: email || "equipe@economix.com.br", name: "Equipe Economix" });
+        setUser({ id: "preview", email: email || "team@economix.example", name: "Economix Team" });
         return null;
       }
       const { error } = await supabase.auth.signInWithPassword({ email, password });
@@ -60,9 +60,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setUser(null);
     },
     recover: async (email) => {
-      if (!supabase) return "No modo de demonstração, nenhum e-mail será enviado.";
+      if (!supabase) return "No email is sent in private preview mode.";
       const { error } = await supabase.auth.resetPasswordForEmail(email);
-      return error ? error.message : "Enviamos as instruções para o seu e-mail.";
+      return error ? error.message : "Password reset instructions were sent to your email.";
     },
   }), [loading, user]);
 
@@ -71,6 +71,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
 export function useAuth() {
   const value = useContext(AuthContext);
-  if (!value) throw new Error("useAuth deve ser usado dentro de AuthProvider");
+  if (!value) throw new Error("useAuth must be used inside AuthProvider");
   return value;
 }

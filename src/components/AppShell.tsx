@@ -6,16 +6,16 @@ import { useAuth } from "../features/auth/AuthProvider";
 import { cn } from "../lib/cn";
 
 const navigation = [
-  { to: "/", label: "Início", icon: Home },
+  { to: "/", label: "Home", icon: Home },
   { to: "/designs", label: "Designs", icon: LayoutGrid },
-  { to: "/gerar", label: "Gerar", icon: WandSparkles },
-  { to: "/arquivos", label: "Arquivos", icon: Archive },
-  { to: "/configuracoes", label: "Ajustes", icon: Settings },
+  { to: "/generate", label: "Generate", icon: WandSparkles },
+  { to: "/files", label: "Files", icon: Archive },
+  { to: "/settings", label: "Settings", icon: Settings },
 ];
 
 function Navigation({ onNavigate }: { onNavigate?: () => void }) {
   return (
-    <nav className="nav-list" aria-label="Navegação principal">
+    <nav className="nav-list" aria-label="Main navigation">
       {navigation.map(({ to, label, icon: Icon }) => (
         <NavLink key={to} to={to} end={to === "/"} onClick={onNavigate} className={({ isActive }) => cn("nav-item", isActive && "is-active")}>
           <Icon size={20} strokeWidth={1.8} aria-hidden="true" />
@@ -44,20 +44,20 @@ export function AppShell({ children }: { children: ReactNode }) {
           <span className="brand-mark" aria-hidden="true"><FileText size={20} /></span>
           <span>Cartaz Economix</span>
         </div>
-        <button className="primary-button create-button" onClick={() => navigate("/gerar")}><Plus size={18} /> Criar cartazes</button>
+        <button className="primary-button create-button" onClick={() => navigate("/generate")}><Plus size={18} /> Create posters</button>
         <Navigation />
         <div className="sidebar-user">
           <Avatar.Root className="avatar-root">
             <Avatar.Fallback className="avatar-fallback">EE</Avatar.Fallback>
           </Avatar.Root>
           <span><strong>{user?.name}</strong><small>{user?.email}</small></span>
-          <button className="icon-button" onClick={handleSignOut} aria-label="Sair" title="Sair"><LogOut size={18} /></button>
+          <button className="icon-button" onClick={handleSignOut} aria-label="Sign out" title="Sign out"><LogOut size={18} /></button>
         </div>
       </aside>
 
       <header className="mobile-header">
         <div className="brand-lockup compact"><span className="brand-mark"><FileText size={18} /></span><span>Cartaz</span></div>
-        <button className="icon-button" onClick={() => setMobileOpen((value) => !value)} aria-label={mobileOpen ? "Fechar menu" : "Abrir menu"} title={mobileOpen ? "Fechar menu" : "Abrir menu"}>
+        <button className="icon-button" onClick={() => setMobileOpen((value) => !value)} aria-label={mobileOpen ? "Close menu" : "Open menu"} title={mobileOpen ? "Close menu" : "Open menu"}>
           {mobileOpen ? <X size={21} /> : <Menu size={21} />}
         </button>
       </header>
@@ -65,13 +65,13 @@ export function AppShell({ children }: { children: ReactNode }) {
       {mobileOpen && (
         <div className="mobile-sheet">
           <Navigation onNavigate={() => setMobileOpen(false)} />
-          <button className="secondary-button" onClick={handleSignOut}><LogOut size={18} /> Sair</button>
+          <button className="secondary-button" onClick={handleSignOut}><LogOut size={18} /> Sign out</button>
         </div>
       )}
 
       <main className="app-content" key={location.pathname}>{children}</main>
 
-      <nav className="bottom-nav" aria-label="Navegação inferior">
+      <nav className="bottom-nav" aria-label="Bottom navigation">
         {navigation.map(({ to, label, icon: Icon }) => (
           <NavLink key={to} to={to} end={to === "/"} className={({ isActive }) => cn("bottom-nav-item", isActive && "is-active")}>
             <Icon size={20} strokeWidth={1.8} />
@@ -80,7 +80,7 @@ export function AppShell({ children }: { children: ReactNode }) {
         ))}
       </nav>
 
-      <button className="mobile-create" onClick={() => navigate("/gerar")} aria-label="Criar cartazes" title="Criar cartazes"><Plus size={22} /></button>
+      <button className="mobile-create" onClick={() => navigate("/generate")} aria-label="Create posters" title="Create posters"><Plus size={22} /></button>
     </div>
   );
 }
@@ -98,7 +98,7 @@ export function ContinueCard() {
   return (
     <button className="continue-card">
       <span className="continue-icon"><WandSparkles size={22} /></span>
-      <span><small>Continuar de onde parei</small><strong>Ofertas do fim de semana</strong><em>8 de 10 produtos revisados</em></span>
+      <span><small>Continue where I left off</small><strong>Weekend offers</strong><em>8 of 10 products reviewed</em></span>
       <ChevronRight size={20} />
     </button>
   );
