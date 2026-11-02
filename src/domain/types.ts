@@ -1,8 +1,18 @@
 export type DesignStatus = "template" | "draft" | "published";
 export type DynamicField =
-  | "description" | "reference" | "ean" | "normalPrice" | "promotionalPrice"
-  | "installments" | "installmentValue" | "unit" | "package" | "size"
-  | "note" | "bundlePrice" | "savings";
+  | "description"
+  | "reference"
+  | "ean"
+  | "normalPrice"
+  | "promotionalPrice"
+  | "installments"
+  | "installmentValue"
+  | "unit"
+  | "package"
+  | "size"
+  | "note"
+  | "bundlePrice"
+  | "savings";
 
 export type TextFit = "shrink" | "wrap" | "truncate";
 export type PriceStyle = "standard" | "reduced-cents";
@@ -35,7 +45,7 @@ export interface ProductIssue {
 
 export interface DesignElement {
   id: string;
-  kind: "text" | "dynamic" | "shape";
+  kind: "text" | "dynamic" | "shape" | "image" | "qr";
   name: string;
   x: number;
   y: number;
@@ -44,6 +54,9 @@ export interface DesignElement {
   rotation: number;
   text?: string;
   field?: DynamicField;
+  token?: string;
+  source?: string;
+  fontFamily?: "Impact" | "Anton" | "Helvetica";
   fontSize: number;
   minFontSize: number;
   fontWeight: 400 | 500 | 600;
@@ -65,6 +78,7 @@ export interface Design {
   orientation: "portrait" | "landscape";
   backgroundColor: string;
   accentColor: string;
+  backgroundImageDataUrl?: string;
   elements: DesignElement[];
   version: number;
   updatedAt: string;
@@ -80,6 +94,14 @@ export interface Batch {
   outputMode: "single" | "per-product";
   status: "ready" | "failed";
   createdAt: string;
+}
+
+export interface TltImportReport {
+  sourceId: string;
+  name: string;
+  status: "imported" | "partial" | "failed";
+  warnings: string[];
+  designId?: string;
 }
 
 export const FIELD_LABELS: Record<DynamicField, string> = {
@@ -98,7 +120,28 @@ export const FIELD_LABELS: Record<DynamicField, string> = {
   savings: "You save",
 };
 
+export const FIELD_TOKENS: Record<DynamicField, string> = {
+  description: "DESCRICAO",
+  reference: "REFERENCIA",
+  ean: "EAN",
+  normalPrice: "PRECO NORMAL",
+  promotionalPrice: "PRECO PROMOCIONAL",
+  installments: "NRO PARCELAS",
+  installmentValue: "VALOR PARCELA",
+  unit: "UNIDADE",
+  package: "EMBALAGEM",
+  size: "TAMANHO",
+  note: "OBSERVACAO",
+  bundlePrice: "VALOR FARDO",
+  savings: "ECONOMIZE VALOR",
+};
+
 export const PAGE_SIZES = {
-  A6: [105, 148], A5: [148, 210], A4: [210, 297], A3: [297, 420],
-  A2: [420, 594], Office: [216, 279], Legal: [216, 356],
+  A6: [105, 148],
+  A5: [148, 210],
+  A4: [210, 297],
+  A3: [297, 420],
+  A2: [420, 594],
+  Office: [216, 279],
+  Legal: [216, 356],
 } as const;

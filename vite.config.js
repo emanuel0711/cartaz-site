@@ -13,4 +13,7 @@ export default defineConfig({
     target: "es2022",
     sourcemap: true,
   },
+  test: {
+    exclude: ["e2e/**", "node_modules/**", "dist/**"],
+  },
 });

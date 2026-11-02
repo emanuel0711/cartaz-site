@@ -1,6 +1,6 @@
 # Independent audit handoff — Cartaz Economix
 
-> Living document updated after the English functional MVP. Read this before auditing the code.  
+> Living document updated after the 2026-11-02 local-first hardening pass. Read this before auditing the code.  
 > Evidence labels: `[VERIFIED]` executed or observed; `[CODE REVIEWED]` inspected without execution; `[ASSUMPTION]` planned or dependent on external infrastructure.
 
 ## Index
@@ -23,7 +23,9 @@
 
 Cartaz Economix lets supermarket staff create reusable poster designs, import product data, correct validation errors, preview posters, and download a vector PDF. The primary flow is Design → Products → Review data → Preview → Output (`src/features/generation/GeneratePage.tsx:12-45`). `[CODE REVIEWED]`
 
-The published artifact is a private functional preview. It is not a production multi-user deployment: design, product, brand, and batch state persist in the browser (`src/store/appStore.ts:25-47`). `[CODE REVIEWED]`
+The published artifact is a private local-first MVP. It is not a production multi-user deployment: design, product, brand, batch, and optional licensed-font state persist in browser IndexedDB (`src/store/appStore.ts:27-55`; `src/lib/indexedDbStorage.ts:43-82`). `[VERIFIED]`
+
+Changes that supersede the previous handoff: the fake local login and localStorage data store were removed; local mode opens directly, persisted app state moved to IndexedDB with schema-envelope validation, portable backup/restore was added, local image/QR tools were enabled, and a TLT HAR importer was implemented. `[VERIFIED]`
 
 Run locally:
 
@@ -96,7 +98,7 @@ Solid arrows are implemented; dotted arrows are production architecture only. `[
 
 When Supabase variables exist, the provider reads the session, subscribes to auth changes, signs in with password, signs out, and starts password recovery (`src/features/auth/AuthProvider.tsx:31-65`). `[CODE REVIEWED]`
 
-Without Supabase, any non-empty preview form creates a local marker in `localStorage` and a fixed preview identity (`src/features/auth/AuthProvider.tsx:23-28,48-52`). This is not authentication. The hosted Site's owner-private gate is the only external access boundary for the preview. `[VERIFIED]`
+Without Supabase, the app clearly enters local mode with a non-authenticated local-workspace identity and does not show a login form (`src/features/auth/AuthProvider.tsx`). The hosted Site's owner-private gate is the external access boundary for this publication. `[VERIFIED]`
 
 There are no database migrations, tables, RLS policies, Storage buckets, SQL policies, service-role keys, edge functions, or server authorization in this repository. `[VERIFIED]` Therefore there is no SQL to reproduce and no claim of account isolation.
 
@@ -122,12 +124,12 @@ No database schema or migration has been applied. `[VERIFIED]` User-controlled f
 | Product text | `products.ts:55-90` | Required description/price; length warning | Rendered as React text; PDF strips controls/emoji | Description warning at 240 chars |
 | EAN | `products.ts:61-62,86-87` | String; warns unless 8/12/13/14 digits | Digits-only editing in the table | 14 expected digits; no hard maximum in imported string |
 | Money | `format.ts:8-19` | Finite value converted to integer cents | Non-numeric currency symbols removed | No explicit absolute maximum |
-| Design JSON | Zustand persistence | TypeScript only at creation time | No runtime schema on reload | Browser quota only |
+| Design/product/batch JSON | Zustand persistence through IndexedDB | Versioned envelope checked with zod on load | Invalid envelopes are ignored with a console warning | Browser quota only |
 | URL design id | `App.tsx:26`; editor lookup | Lookup; missing id shows not found | Not interpolated into HTML | No explicit length limit |
 | Login form | `LoginPage.tsx:56-76` | HTML required/email only | React text rendering | No explicit length limit |
 | PDF batch | `GeneratePage.tsx:21-35` | Errors block progress; copies 1–20; 1,000-page browser cap | PDF text filter | 1,000 pages |
 
-Image upload is intentionally disabled (`src/features/editor/EditorPage.tsx:25`) because private Storage and content validation are unavailable. `[VERIFIED]`
+Local image upload accepts PNG/JPEG/WebP only, limits outer size to 5 MB and decoded dimensions to 8,192 × 8,192, and stores the data URL in IndexedDB (`src/features/editor/EditorPage.tsx`). SVG is rejected. `[VERIFIED]`
 
 ## 7. Endpoints and functions
 
@@ -148,12 +150,12 @@ Malformed spreadsheet and PDF errors are caught and shown as text in the wizard 
 
 | Severity | Finding | Location | Current mitigation | Missing control |
 | --- | --- | --- | --- | --- |
-| High | Preview auth is a local marker, not authentication | `AuthProvider.tsx:23-28,48-52` | Owner-private Site gate and explicit preview warning | Production must require Supabase and remove preview sign-in |
-| High | No server authorization/RLS/Storage isolation | repository-wide | No remote data is stored | Add migrations, RLS tests, private buckets, signed paths |
+| High | Optional Supabase mode authenticates a user but still has no database/RLS/Storage implementation | repository-wide | Default local mode does not claim account isolation | Do not market remote multi-user storage until migrations, RLS tests, private buckets, and signed paths exist |
 | High | XLSX parser receives compressed content before row/column limits can be checked; a crafted workbook may consume memory | `products.ts:45-51` | 16 MB outer-file limit | Server inspection, decompressed-size/time limits, worker isolation |
-| Medium | A permitted 1,000-page PDF is still generated on the browser main thread | `GeneratePage.tsx:29-33`; `pdf.ts:80-92` | 1,000-page hard cap | Queue, cancellation, server worker and lower interactive cap |
+| High | A permitted 1,000-page PDF is still generated on the browser main thread without cancellation | `GeneratePage.tsx:184-198`; `pdf.ts:261-298` | 1,000-page hard cap | Move generation to a Web Worker, add progress/cancellation, and lower the interactive cap |
 | Medium | Upload checks extension and basic bytes, but not MIME consistency or decompressed XLSX structure | `products.ts:46-53` | Extension, ZIP signature and binary-CSV checks | Server-side parser and full archive inspection |
-| Medium | Entire product/design/batch snapshots persist in `localStorage` | `appStore.ts:25-47` | Preview warning and reset action | Do not store real data locally; authenticated server persistence |
+| Medium | Product/design/batch snapshots and optional licensed font persist unencrypted in browser IndexedDB | `appStore.ts`; `indexedDbStorage.ts` | Local-mode disclosure, reset, and portable backup | Document endpoint-device risk and consider optional backup encryption |
+| Medium | TLT HAR import reads the whole selected file into memory and has no explicit outer-size limit; the 8.9 MB browser QA flow was slow | `DesignsPage.tsx`; `tlt.ts:186-257` | Local JSON parse; no imported HTML execution | Add a HAR size cap, progress UI, and worker/streaming parsing |
 | Medium | Hosted security headers were not independently inspected | hosting configuration outside repo | Private publication | Verify CSP, frame-ancestors, HSTS, Referrer-Policy, Permissions-Policy |
 | Low | Formula neutralization covers `=`, `+`, `@` but not a leading `-` because negative prices may be valid | `format.ts:21-24` | No spreadsheet export of imported cells | Separate numeric parsing from exported text and prefix all dangerous exports |
 | Low | Standard PDF fonts replace emoji with a square and may reject unsupported Unicode outside WinAnsi | `pdf.ts:14-16,69-70` | Control/emoji replacement | Embed a vetted Unicode font and test font subsetting |
@@ -164,13 +166,13 @@ No `dangerouslySetInnerHTML`, `innerHTML`, `eval`, or remote URL fetching exists
 ## 9. Known bugs and limitations
 
 - `[VERIFIED]` Production Supabase database, RLS, Storage, worker, cross-device history, email recovery configuration, and account isolation are incomplete.
-- `[VERIFIED]` Image insertion is disabled.
+- `[VERIFIED]` Local image insertion and QR generation are implemented; PDF-as-background is not implemented.
 - `[VERIFIED]` Undo/redo controls are visible but disabled; editor autosave exists, version restore UI does not.
 - `[CODE REVIEWED]` Browser preview and PDF share contracts but not the exact same font metrics/layout implementation; long text can differ.
 - `[VERIFIED]` PDF output is one combined file only; per-product output is not implemented.
 - `[CODE REVIEWED]` Archive removes a local design after confirmation; there is no undo/restore.
 - `[CODE REVIEWED]` Mixed page sizes are supported by PDF pages, but the UI does not show grouping controls.
-- `[VERIFIED]` Offline reload works for local state after assets are cached by the browser, but no service worker/offline guarantee exists.
+- `[CODE REVIEWED]` The production bundle has no runtime font/CDN/analytics/LLM dependency, but a cold offline reload was not verified and no service worker exists.
 - `[VERIFIED]` Concurrent editing in two tabs uses last-write-wins localStorage behavior.
 - `[VERIFIED]` EAN 8/12/13/14 and leading zero behavior is validated; checksum validity is not checked.
 - `[VERIFIED]` Dot/comma monetary parsing and 0.99/1,000.00 cases are tested; absolute upper bounds and negative business rules are incomplete.
@@ -180,7 +182,7 @@ No `dangerouslySetInnerHTML`, `innerHTML`, `eval`, or remote URL fetching exists
 
 Automated tests are in `src/domain/products.test.ts` and `src/domain/pdf.test.ts`.
 
-Last run on 2026-10-30: 2 files, 9 tests, all passed. `[VERIFIED]` Covered: comma/dot currency, quoted CSV, leading-zero EAN, required values, 10-page PDF, and second-design page doubling.
+Last run on 2026-11-02: 4 files, 17 tests, all passed. `[VERIFIED]` Covered: currency formats, delimiter detection, quoted CSV, leading-zero/scientific EAN handling, duplicate headers, required values, backup schema, observed TLT HAR conversion, malformed HAR, PDF page counts, second-design page doubling, local Anton embedding, and Portuguese PDF glyph input.
 
 Manual browser run: Designs loaded, editor loaded, five wizard steps completed with 10 sample products, vector PDF generated/downloaded, and batch saved. `[VERIFIED]`
 
@@ -190,7 +192,7 @@ Not covered: component unit tests, upload through the browser chooser, malformed
 
 Ten fictional products are in `src/domain/fixtures.ts`; one EAN starts with zero and one description is intentionally long. No real store data is included. `[CODE REVIEWED]`
 
-Preview entry: `team@economix.example` / `private-preview`. These are labels, not credentials. `[VERIFIED]`
+Local mode has no account or password. Supabase credentials were not configured or tested. `[VERIFIED]`
 
 For production isolation tests, create `user-a@economix.test` and `user-b@economix.test` in a disposable Supabase project. Build one valid CSV from `TEMPLATE_CSV` (`products.ts:103`) and one malicious/invalid corpus with formula prefixes, oversized values, duplicate EANs, numeric EANs, missing prices, MIME mismatches, SVG scripts, and compressed XLSX bombs. Do not use real customer or store data.
 
@@ -216,4 +218,4 @@ For production isolation tests, create `user-a@economix.test` and `user-b@econom
 
 ---
 
-Current self-review count: **0 critical, 3 high, 4 medium, and 3 low**. The three weakest areas are the non-authenticating preview session, absent backend authorization/storage, and resource exhaustion risk in XLSX/PDF processing.
+Current self-review count: **0 critical, 3 high, 6 medium, and 3 low**. The three weakest areas are XLSX decompression/resource exhaustion, main-thread PDF generation without cancellation, and the incomplete optional Supabase/RLS/Storage architecture. Source UI is English, but not every literal has yet been moved into `src/i18n/en.ts`; full localization centralization remains open.
